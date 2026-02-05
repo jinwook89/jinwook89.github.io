@@ -1,12 +1,404 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>Result</title>
-	</head>
-	<body><h1>YEAH SANDWICHES</h1>
-	<img src="http://bit.ly/RhrMEn" />
-		<p>I like eggs.</p>
-		<p>And ham!</p>
-		<p>But mostly sandwiches.</p>
-	</body>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>별을 피해라: 미니 웹 게임</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			--bg: #0b0d1a;
+			--panel: rgba(21, 27, 48, 0.88);
+			--accent: #6cf6ff;
+			--accent-2: #ff8ad8;
+			--text: #f2f5ff;
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+			background: radial-gradient(circle at top, #13183a, var(--bg));
+			color: var(--text);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			min-height: 100vh;
+			padding: 32px 20px 48px;
+			gap: 24px;
+		}
+
+		header {
+			text-align: center;
+			max-width: 720px;
+			gap: 12px;
+			display: grid;
+		}
+
+		header h1 {
+			font-size: clamp(1.8rem, 2.4vw, 2.8rem);
+			letter-spacing: 0.04em;
+		}
+
+		header p {
+			font-size: 1rem;
+			color: #c7d0ff;
+		}
+
+		main {
+			width: min(920px, 100%);
+			display: grid;
+			grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+			gap: 20px;
+		}
+
+		.game-panel {
+			background: var(--panel);
+			border-radius: 16px;
+			padding: 20px;
+			box-shadow: 0 20px 60px rgba(6, 8, 20, 0.55);
+		}
+
+		canvas {
+			width: 100%;
+			background: linear-gradient(180deg, rgba(9, 11, 22, 0.9), rgba(7, 8, 16, 0.98));
+			border-radius: 12px;
+			display: block;
+			border: 1px solid rgba(108, 246, 255, 0.2);
+		}
+
+		.status {
+			display: grid;
+			gap: 14px;
+		}
+
+		.status-card {
+			background: rgba(14, 18, 35, 0.7);
+			border: 1px solid rgba(108, 246, 255, 0.15);
+			padding: 16px;
+			border-radius: 12px;
+			display: grid;
+			gap: 8px;
+		}
+
+		.status-card h2 {
+			font-size: 1rem;
+			color: var(--accent);
+		}
+
+		.status-list {
+			display: grid;
+			gap: 6px;
+			color: #d8e3ff;
+			font-size: 0.95rem;
+		}
+
+		.controls {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin-top: 4px;
+		}
+
+		button {
+			border: none;
+			border-radius: 999px;
+			padding: 10px 18px;
+			background: var(--accent);
+			color: #00141c;
+			font-weight: 700;
+			cursor: pointer;
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		button.secondary {
+			background: transparent;
+			color: var(--accent-2);
+			border: 1px solid rgba(255, 138, 216, 0.6);
+		}
+
+		button:hover {
+			transform: translateY(-1px) scale(1.01);
+			box-shadow: 0 10px 20px rgba(108, 246, 255, 0.25);
+		}
+
+		footer {
+			color: #95a2d6;
+			font-size: 0.85rem;
+		}
+
+		@media (max-width: 820px) {
+			main {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<h1>별을 피해라 ✨</h1>
+		<p>화살표나 A/D 키로 우주선을 움직여 떨어지는 별을 피하세요. 시간이 지날수록 속도가 빨라집니다.</p>
+	</header>
+
+	<main>
+		<section class="game-panel">
+			<canvas id="gameCanvas" width="720" height="420" aria-label="별 피하기 게임" role="img"></canvas>
+		</section>
+		<aside class="status">
+			<div class="status-card">
+				<h2>게임 상태</h2>
+				<div class="status-list">
+					<div>점수: <strong id="score">0</strong></div>
+					<div>생존 시간: <strong id="time">0.0</strong>초</div>
+					<div>레벨: <strong id="level">1</strong></div>
+				</div>
+				<div class="controls">
+					<button id="startButton">시작하기</button>
+					<button id="restartButton" class="secondary">다시하기</button>
+				</div>
+			</div>
+			<div class="status-card">
+				<h2>플레이 팁</h2>
+				<ul class="status-list">
+					<li>왼쪽/오른쪽 키를 길게 눌러 부드럽게 이동하세요.</li>
+					<li>별을 연속으로 피하면 콤보 보너스가 증가합니다.</li>
+					<li>최고 기록에 도전해 보세요!</li>
+				</ul>
+			</div>
+		</aside>
+	</main>
+
+	<footer>🎮 간단한 HTML5 캔버스 게임 데모입니다.</footer>
+
+	<script>
+		const canvas = document.getElementById("gameCanvas");
+		const ctx = canvas.getContext("2d");
+		const scoreEl = document.getElementById("score");
+		const timeEl = document.getElementById("time");
+		const levelEl = document.getElementById("level");
+		const startButton = document.getElementById("startButton");
+		const restartButton = document.getElementById("restartButton");
+
+		const state = {
+			running: false,
+			lastTime: 0,
+			timer: 0,
+			score: 0,
+			level: 1,
+			combo: 0,
+			spawnTimer: 0,
+			stars: [],
+			player: {
+				x: canvas.width / 2,
+				y: canvas.height - 50,
+				width: 46,
+				height: 20,
+				speed: 280,
+				dx: 0,
+			},
+		};
+
+		const keys = new Set();
+
+		const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+		const resetGame = () => {
+			state.running = false;
+			state.lastTime = 0;
+			state.timer = 0;
+			state.score = 0;
+			state.level = 1;
+			state.combo = 0;
+			state.spawnTimer = 0;
+			state.stars = [];
+			state.player.x = canvas.width / 2;
+			state.player.dx = 0;
+			updateHud();
+			draw();
+		};
+
+		const updateHud = () => {
+			scoreEl.textContent = state.score.toString();
+			timeEl.textContent = state.timer.toFixed(1);
+			levelEl.textContent = state.level.toString();
+		};
+
+		const spawnStar = () => {
+			const size = 10 + Math.random() * 16;
+			state.stars.push({
+				x: 30 + Math.random() * (canvas.width - 60),
+				y: -size,
+				radius: size,
+				speed: 110 + Math.random() * 120 + state.level * 14,
+				hue: 180 + Math.random() * 100,
+			});
+		};
+
+		const update = (delta) => {
+			state.timer += delta;
+			state.level = 1 + Math.floor(state.timer / 8);
+
+			state.spawnTimer += delta;
+			const spawnInterval = Math.max(0.35, 1.1 - state.level * 0.08);
+			if (state.spawnTimer >= spawnInterval) {
+				state.spawnTimer = 0;
+				spawnStar();
+			}
+
+			state.player.dx = 0;
+			if (keys.has("ArrowLeft") || keys.has("a") || keys.has("A")) {
+				state.player.dx = -state.player.speed;
+			}
+			if (keys.has("ArrowRight") || keys.has("d") || keys.has("D")) {
+				state.player.dx = state.player.speed;
+			}
+
+			state.player.x = clamp(
+				state.player.x + state.player.dx * delta,
+				state.player.width / 2,
+				canvas.width - state.player.width / 2,
+			);
+
+			state.stars = state.stars.filter((star) => {
+				star.y += star.speed * delta;
+				const miss = star.y - star.radius > canvas.height;
+				if (miss) {
+					state.combo += 1;
+					state.score += 10 + state.combo;
+				}
+				return !miss;
+			});
+
+			const playerTop = state.player.y - state.player.height / 2;
+			const playerBottom = state.player.y + state.player.height / 2;
+			const playerLeft = state.player.x - state.player.width / 2;
+			const playerRight = state.player.x + state.player.width / 2;
+
+			for (const star of state.stars) {
+				const hit =
+					star.x + star.radius > playerLeft &&
+					star.x - star.radius < playerRight &&
+					star.y + star.radius > playerTop &&
+					star.y - star.radius < playerBottom;
+				if (hit) {
+					endGame();
+					break;
+				}
+			}
+		};
+
+		const drawBackground = () => {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+			gradient.addColorStop(0, "rgba(10, 14, 30, 0.9)");
+			gradient.addColorStop(1, "rgba(6, 8, 18, 0.95)");
+			ctx.fillStyle = gradient;
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+			for (let i = 0; i < 50; i += 1) {
+				ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.15})`;
+				ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+			}
+		};
+
+		const drawPlayer = () => {
+			ctx.save();
+			ctx.translate(state.player.x, state.player.y);
+			ctx.fillStyle = "rgba(108, 246, 255, 0.9)";
+			ctx.beginPath();
+			ctx.moveTo(0, -18);
+			ctx.lineTo(20, 16);
+			ctx.lineTo(0, 8);
+			ctx.lineTo(-20, 16);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		};
+
+		const drawStars = () => {
+			for (const star of state.stars) {
+				ctx.fillStyle = `hsla(${star.hue}, 90%, 70%, 0.9)`;
+				ctx.beginPath();
+				ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		};
+
+		const drawOverlay = () => {
+			if (state.running) return;
+
+			ctx.fillStyle = "rgba(5, 6, 12, 0.55)";
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.fillStyle = "#f2f5ff";
+			ctx.font = "bold 26px Pretendard, sans-serif";
+			ctx.textAlign = "center";
+			ctx.fillText("스페이스바 또는 시작 버튼으로 게임 시작", canvas.width / 2, canvas.height / 2 - 10);
+			ctx.font = "16px Pretendard, sans-serif";
+			ctx.fillStyle = "#9bb4ff";
+			ctx.fillText("별을 피하며 오래 생존하세요!", canvas.width / 2, canvas.height / 2 + 20);
+		};
+
+		const draw = () => {
+			drawBackground();
+			drawStars();
+			drawPlayer();
+			drawOverlay();
+		};
+
+		const loop = (timestamp) => {
+			if (!state.running) {
+				draw();
+				return;
+			}
+
+			if (!state.lastTime) state.lastTime = timestamp;
+			const delta = Math.min((timestamp - state.lastTime) / 1000, 0.05);
+			state.lastTime = timestamp;
+
+			update(delta);
+			draw();
+			updateHud();
+			requestAnimationFrame(loop);
+		};
+
+		const startGame = () => {
+			if (state.running) return;
+			state.running = true;
+			state.lastTime = 0;
+			requestAnimationFrame(loop);
+		};
+
+		const endGame = () => {
+			state.running = false;
+			state.combo = 0;
+		};
+
+		startButton.addEventListener("click", () => {
+			startGame();
+		});
+
+		restartButton.addEventListener("click", () => {
+			resetGame();
+			startGame();
+		});
+
+		window.addEventListener("keydown", (event) => {
+			keys.add(event.key);
+			if (event.key === " ") {
+				event.preventDefault();
+				startGame();
+			}
+		});
+
+		window.addEventListener("keyup", (event) => {
+			keys.delete(event.key);
+		});
+
+		resetGame();
+	</script>
+</body>
 </html>
