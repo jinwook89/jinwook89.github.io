@@ -3,15 +3,19 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>별을 피해라: 미니 웹 게임</title>
+	<title>Idle Company Worker | 회사원 키우기</title>
 	<style>
 		:root {
 			color-scheme: dark;
-			--bg: #0b0d1a;
-			--panel: rgba(21, 27, 48, 0.88);
-			--accent: #6cf6ff;
-			--accent-2: #ff8ad8;
-			--text: #f2f5ff;
+			--bg: #0a0b12;
+			--panel: #121526;
+			--panel-soft: #1a2140;
+			--text: #f7f7ff;
+			--muted: #a5b0d6;
+			--accent: #8cf6d3;
+			--accent-2: #ffb4f0;
+			--danger: #ff7a7a;
+			--pixel: "Press Start 2P", "NeoDunggeunmo", "DungGeunMo", monospace;
 		}
 
 		* {
@@ -21,117 +25,201 @@
 		}
 
 		body {
-			font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
-			background: radial-gradient(circle at top, #13183a, var(--bg));
+			font-family: var(--pixel);
+			background: radial-gradient(circle at top, #151a36, var(--bg));
 			color: var(--text);
+			min-height: 100vh;
+			padding: 32px 20px 48px;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			min-height: 100vh;
-			padding: 32px 20px 48px;
 			gap: 24px;
 		}
 
 		header {
 			text-align: center;
-			max-width: 720px;
-			gap: 12px;
+			max-width: 760px;
 			display: grid;
+			gap: 12px;
 		}
 
 		header h1 {
-			font-size: clamp(1.8rem, 2.4vw, 2.8rem);
-			letter-spacing: 0.04em;
+			font-size: clamp(1.4rem, 3vw, 2.3rem);
+			letter-spacing: 0.06em;
 		}
 
 		header p {
-			font-size: 1rem;
-			color: #c7d0ff;
+			font-size: 0.75rem;
+			line-height: 1.5;
+			color: var(--muted);
 		}
 
 		main {
-			width: min(920px, 100%);
+			width: min(1100px, 100%);
 			display: grid;
-			grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-			gap: 20px;
+			grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+			gap: 18px;
 		}
 
-		.game-panel {
+		.panel {
 			background: var(--panel);
-			border-radius: 16px;
-			padding: 20px;
-			box-shadow: 0 20px 60px rgba(6, 8, 20, 0.55);
-		}
-
-		canvas {
-			width: 100%;
-			background: linear-gradient(180deg, rgba(9, 11, 22, 0.9), rgba(7, 8, 16, 0.98));
-			border-radius: 12px;
-			display: block;
-			border: 1px solid rgba(108, 246, 255, 0.2);
-		}
-
-		.status {
+			border: 2px solid #2b3566;
+			border-radius: 18px;
+			padding: 18px;
+			box-shadow: 0 20px 40px rgba(4, 7, 20, 0.6);
 			display: grid;
 			gap: 14px;
 		}
 
-		.status-card {
-			background: rgba(14, 18, 35, 0.7);
-			border: 1px solid rgba(108, 246, 255, 0.15);
-			padding: 16px;
-			border-radius: 12px;
+		.canvas-wrap {
+			background: var(--panel-soft);
+			border: 2px solid #2f3b72;
+			border-radius: 14px;
+			padding: 14px;
 			display: grid;
+			gap: 12px;
+		}
+
+		canvas {
+			width: 100%;
+			height: auto;
+			background: #0c0f1f;
+			border-radius: 8px;
+			image-rendering: pixelated;
+			border: 2px solid #2c3768;
+		}
+
+		.grid {
+			display: grid;
+			gap: 10px;
+		}
+
+		.stat {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			font-size: 0.75rem;
+			color: var(--muted);
+		}
+
+		.stat strong {
+			color: var(--text);
+		}
+
+		.progress {
+			background: #0f1220;
+			border-radius: 999px;
+			border: 1px solid #2b3566;
+			overflow: hidden;
+			height: 10px;
+		}
+
+		.progress span {
+			display: block;
+			height: 100%;
+			background: linear-gradient(90deg, var(--accent), #66d4ff);
+			width: 100%;
+			transition: width 0.2s ease;
+		}
+
+		.progress.danger span {
+			background: linear-gradient(90deg, var(--danger), #ffb36b);
+		}
+
+		.button-row {
+			display: flex;
+			flex-wrap: wrap;
 			gap: 8px;
 		}
 
-		.status-card h2 {
-			font-size: 1rem;
-			color: var(--accent);
-		}
-
-		.status-list {
-			display: grid;
-			gap: 6px;
-			color: #d8e3ff;
-			font-size: 0.95rem;
-		}
-
-		.controls {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 10px;
-			margin-top: 4px;
-		}
-
 		button {
-			border: none;
-			border-radius: 999px;
-			padding: 10px 18px;
-			background: var(--accent);
-			color: #00141c;
-			font-weight: 700;
+			font-family: var(--pixel);
+			font-size: 0.7rem;
+			padding: 10px 12px;
+			border-radius: 10px;
+			border: 2px solid #3a4476;
+			background: #1b2244;
+			color: var(--text);
 			cursor: pointer;
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
-		}
-
-		button.secondary {
-			background: transparent;
-			color: var(--accent-2);
-			border: 1px solid rgba(255, 138, 216, 0.6);
+			transition: transform 0.15s ease, box-shadow 0.15s ease;
 		}
 
 		button:hover {
-			transform: translateY(-1px) scale(1.01);
-			box-shadow: 0 10px 20px rgba(108, 246, 255, 0.25);
+			transform: translateY(-1px);
+			box-shadow: 0 6px 14px rgba(12, 16, 40, 0.6);
+		}
+
+		button.primary {
+			background: linear-gradient(135deg, #4ff4c1, #56b8ff);
+			color: #06121d;
+			border-color: #7df9da;
+		}
+
+		button.secondary {
+			background: #271c3e;
+			border-color: #564078;
+			color: var(--accent-2);
+		}
+
+		button.danger {
+			background: #3a1e2a;
+			border-color: #7a3a4c;
+			color: #ff9ea8;
+		}
+
+		.card-list {
+			display: grid;
+			gap: 10px;
+		}
+
+		.card {
+			background: #161b33;
+			border: 1px solid #2d3560;
+			border-radius: 12px;
+			padding: 12px;
+			display: grid;
+			gap: 8px;
+			font-size: 0.7rem;
+		}
+
+		.card h3 {
+			font-size: 0.75rem;
+			color: var(--accent);
+		}
+
+		.tags {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			font-size: 0.65rem;
+			color: var(--muted);
+		}
+
+		.badge {
+			padding: 2px 6px;
+			border-radius: 999px;
+			border: 1px solid #364078;
+			background: #10142b;
+		}
+
+		.log {
+			max-height: 160px;
+			overflow-y: auto;
+			background: #0b0e1e;
+			border: 1px solid #232a50;
+			border-radius: 10px;
+			padding: 10px;
+			font-size: 0.65rem;
+			line-height: 1.5;
+			color: #c9d2ff;
 		}
 
 		footer {
-			color: #95a2d6;
-			font-size: 0.85rem;
+			font-size: 0.65rem;
+			color: var(--muted);
 		}
 
-		@media (max-width: 820px) {
+		@media (max-width: 900px) {
 			main {
 				grid-template-columns: 1fr;
 			}
@@ -140,265 +228,428 @@
 </head>
 <body>
 	<header>
-		<h1>별을 피해라 ✨</h1>
-		<p>화살표나 A/D 키로 우주선을 움직여 떨어지는 별을 피하세요. 시간이 지날수록 속도가 빨라집니다.</p>
+		<h1>🧑‍💼 Idle Company Worker</h1>
+		<p>
+			자동으로 돈을 벌며 회사원을 성장시키고, 퇴근 미니게임으로 체력을 회복하세요. 도트 감성의 2D
+			회사 라이프를 즐기는 간단한 데모입니다.
+		</p>
 	</header>
 
 	<main>
-		<section class="game-panel">
-			<canvas id="gameCanvas" width="720" height="420" aria-label="별 피하기 게임" role="img"></canvas>
-		</section>
-		<aside class="status">
-			<div class="status-card">
-				<h2>게임 상태</h2>
-				<div class="status-list">
-					<div>점수: <strong id="score">0</strong></div>
-					<div>생존 시간: <strong id="time">0.0</strong>초</div>
-					<div>레벨: <strong id="level">1</strong></div>
-				</div>
-				<div class="controls">
-					<button id="startButton">시작하기</button>
-					<button id="restartButton" class="secondary">다시하기</button>
+		<section class="panel">
+			<div class="canvas-wrap">
+				<canvas id="officeCanvas" width="320" height="200" aria-label="사무실 도트 씬" role="img"></canvas>
+				<div class="grid">
+					<div class="stat">자산 <strong id="money">₩0</strong></div>
+					<div class="stat">초당 수익 <strong id="income">₩0</strong></div>
+					<div class="stat">부서 <strong id="department">개발</strong></div>
+					<div class="stat">직급 <strong id="rank">인턴</strong></div>
 				</div>
 			</div>
-			<div class="status-card">
-				<h2>플레이 팁</h2>
-				<ul class="status-list">
-					<li>왼쪽/오른쪽 키를 길게 눌러 부드럽게 이동하세요.</li>
-					<li>별을 연속으로 피하면 콤보 보너스가 증가합니다.</li>
-					<li>최고 기록에 도전해 보세요!</li>
-				</ul>
+			<div class="grid">
+				<div>
+					<div class="stat">체력 <strong id="staminaLabel">100%</strong></div>
+					<div class="progress" id="staminaBar"><span></span></div>
+				</div>
+				<div>
+					<div class="stat">피로도 <strong id="fatigueLabel">0%</strong></div>
+					<div class="progress danger" id="fatigueBar"><span></span></div>
+				</div>
+				<div class="stat">질병 <strong id="sickness">없음</strong></div>
+			</div>
+			<div class="button-row">
+				<button class="primary" id="commuteButton">퇴근 도전</button>
+				<button class="secondary" id="restButton">휴식</button>
+				<button class="danger" id="hospitalButton">병원</button>
+			</div>
+			<div class="card">
+				<h3>퇴근 미니게임</h3>
+				<p>
+					버튼을 누른 뒤 <strong>타이밍에 맞춰 스페이스바</strong>를 눌러 퇴근 성공!
+					성공 시 보너스와 체력 회복, 실패 시 야근 패널티.
+				</p>
+				<div class="tags">
+					<span class="badge" id="miniStatus">대기 중</span>
+					<span class="badge">보너스: ₩<span id="bonusPreview">0</span></span>
+					<span class="badge">난이도: <span id="miniDifficulty">보통</span></span>
+				</div>
+			</div>
+		</section>
+
+		<aside class="panel">
+			<div class="card-list">
+				<div class="card">
+					<h3>업무 & 수익</h3>
+					<div class="stat">기본 직무 수익 <strong id="baseIncome">₩0</strong></div>
+					<div class="stat">장비 보너스 <strong id="equipmentBonus">x1.00</strong></div>
+					<div class="stat">피로 패널티 <strong id="fatiguePenalty">x1.00</strong></div>
+					<div class="button-row">
+						<button id="levelUpButton">직무 레벨업</button>
+						<button id="promoteButton">승진</button>
+					</div>
+				</div>
+				<div class="card">
+					<h3>장비(사무용품)</h3>
+					<div class="button-row">
+						<button id="keyboardButton">키보드 업그레이드</button>
+						<button id="monitorButton">모니터 업그레이드</button>
+						<button id="chairButton">의자 업그레이드</button>
+						<button id="laptopButton">노트북 업그레이드</button>
+					</div>
+					<div class="tags">
+						<span class="badge">키보드 +속도</span>
+						<span class="badge">모니터 수익 배수</span>
+						<span class="badge">의자 체력 소모 감소</span>
+						<span class="badge">노트북 전체 효율</span>
+					</div>
+				</div>
+				<div class="card">
+					<h3>부서 선택</h3>
+					<div class="button-row">
+						<button id="deptDev">개발</button>
+						<button id="deptSales">영업</button>
+						<button id="deptMarketing">마케팅</button>
+					</div>
+					<p>부서에 따라 수익과 이벤트 확률이 변합니다.</p>
+				</div>
+				<div class="card">
+					<h3>상사 이벤트 로그</h3>
+					<div class="log" id="eventLog"></div>
+				</div>
 			</div>
 		</aside>
 	</main>
 
-	<footer>🎮 간단한 HTML5 캔버스 게임 데모입니다.</footer>
+	<footer>© 2024 Idle Company Worker 데모 | 도트 스타일 2D 웹 게임</footer>
 
 	<script>
-		const canvas = document.getElementById("gameCanvas");
+		const moneyEl = document.getElementById("money");
+		const incomeEl = document.getElementById("income");
+		const departmentEl = document.getElementById("department");
+		const rankEl = document.getElementById("rank");
+		const staminaLabel = document.getElementById("staminaLabel");
+		const staminaBar = document.querySelector("#staminaBar span");
+		const fatigueLabel = document.getElementById("fatigueLabel");
+		const fatigueBar = document.querySelector("#fatigueBar span");
+		const sicknessEl = document.getElementById("sickness");
+		const baseIncomeEl = document.getElementById("baseIncome");
+		const equipmentBonusEl = document.getElementById("equipmentBonus");
+		const fatiguePenaltyEl = document.getElementById("fatiguePenalty");
+		const bonusPreviewEl = document.getElementById("bonusPreview");
+		const miniStatusEl = document.getElementById("miniStatus");
+		const miniDifficultyEl = document.getElementById("miniDifficulty");
+		const eventLog = document.getElementById("eventLog");
+		const canvas = document.getElementById("officeCanvas");
 		const ctx = canvas.getContext("2d");
-		const scoreEl = document.getElementById("score");
-		const timeEl = document.getElementById("time");
-		const levelEl = document.getElementById("level");
-		const startButton = document.getElementById("startButton");
-		const restartButton = document.getElementById("restartButton");
 
-		const state = {
-			running: false,
-			lastTime: 0,
-			timer: 0,
-			score: 0,
-			level: 1,
-			combo: 0,
-			spawnTimer: 0,
-			stars: [],
-			player: {
-				x: canvas.width / 2,
-				y: canvas.height - 50,
-				width: 46,
-				height: 20,
-				speed: 280,
-				dx: 0,
-			},
+		const commuteButton = document.getElementById("commuteButton");
+		const restButton = document.getElementById("restButton");
+		const hospitalButton = document.getElementById("hospitalButton");
+		const levelUpButton = document.getElementById("levelUpButton");
+		const promoteButton = document.getElementById("promoteButton");
+		const keyboardButton = document.getElementById("keyboardButton");
+		const monitorButton = document.getElementById("monitorButton");
+		const chairButton = document.getElementById("chairButton");
+		const laptopButton = document.getElementById("laptopButton");
+		const deptDev = document.getElementById("deptDev");
+		const deptSales = document.getElementById("deptSales");
+		const deptMarketing = document.getElementById("deptMarketing");
+
+		const ranks = ["인턴", "사원", "대리", "과장", "부장"];
+		const departments = {
+			개발: { income: 1.2, staminaDrain: 1.15, eventBoost: 1.0 },
+			영업: { income: 1.05, staminaDrain: 1.0, eventBoost: 1.25 },
+			마케팅: { income: 0.95, staminaDrain: 0.9, eventBoost: 1.35 },
 		};
 
-		const keys = new Set();
+		const sicknessTable = {
+			없음: { income: 1, fatigue: 1, recovery: 1 },
+			감기: { income: 0.8, fatigue: 1.1, recovery: 0.8 },
+			번아웃: { income: 0.75, fatigue: 1.35, recovery: 0.7 },
+			요통: { income: 0.9, fatigue: 1.05, recovery: 0.6 },
+		};
 
-		const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+		const state = {
+			money: 0,
+			jobBase: 14,
+			level: 1,
+			stamina: 100,
+			fatigue: 0,
+			rankIndex: 0,
+			department: "개발",
+			sickness: "없음",
+			equipment: { keyboard: 0, monitor: 0, chair: 0, laptop: 0 },
+			minigame: { active: false, target: 0, window: 0, startedAt: 0 },
+			lastTick: performance.now(),
+		};
 
-		const resetGame = () => {
-			state.running = false;
-			state.lastTime = 0;
-			state.timer = 0;
-			state.score = 0;
-			state.level = 1;
-			state.combo = 0;
-			state.spawnTimer = 0;
-			state.stars = [];
-			state.player.x = canvas.width / 2;
-			state.player.dx = 0;
-			updateHud();
-			draw();
+		const logEvent = (message) => {
+			const time = new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+			const entry = document.createElement("div");
+			entry.textContent = `[${time}] ${message}`;
+			eventLog.prepend(entry);
+			while (eventLog.children.length > 8) {
+				eventLog.removeChild(eventLog.lastChild);
+			}
+		};
+
+		const formatMoney = (value) => `₩${Math.floor(value).toLocaleString("ko-KR")}`;
+
+		const getEquipmentBonus = () => {
+			const keyboard = 1 + state.equipment.keyboard * 0.08;
+			const monitor = 1 + state.equipment.monitor * 0.12;
+			const chair = 1 - state.equipment.chair * 0.04;
+			const laptop = 1 + state.equipment.laptop * 0.06;
+			return {
+				income: keyboard * monitor * laptop,
+				staminaDrain: Math.max(0.65, chair),
+			};
+		};
+
+		const getFatiguePenalty = () => {
+			if (state.stamina >= 70) return 1;
+			if (state.stamina >= 40) return 0.8;
+			if (state.stamina >= 10) return 0.6;
+			return 0.3;
+		};
+
+		const totalIncomePerSec = () => {
+			const baseIncome = state.jobBase * Math.pow(1.1, state.level - 1);
+			const equipment = getEquipmentBonus();
+			const fatiguePenalty = getFatiguePenalty();
+			const departmentBonus = departments[state.department].income;
+			const sicknessPenalty = sicknessTable[state.sickness].income;
+			return baseIncome * equipment.income * fatiguePenalty * departmentBonus * sicknessPenalty;
 		};
 
 		const updateHud = () => {
-			scoreEl.textContent = state.score.toString();
-			timeEl.textContent = state.timer.toFixed(1);
-			levelEl.textContent = state.level.toString();
+			const equipment = getEquipmentBonus();
+			const fatiguePenalty = getFatiguePenalty();
+			const baseIncome = state.jobBase * Math.pow(1.1, state.level - 1);
+
+			moneyEl.textContent = formatMoney(state.money);
+			incomeEl.textContent = formatMoney(totalIncomePerSec());
+			departmentEl.textContent = state.department;
+			rankEl.textContent = ranks[state.rankIndex];
+
+			staminaLabel.textContent = `${Math.round(state.stamina)}%`;
+			staminaBar.style.width = `${state.stamina}%`;
+			fatigueLabel.textContent = `${Math.round(state.fatigue)}%`;
+			fatigueBar.style.width = `${state.fatigue}%`;
+			sicknessEl.textContent = state.sickness;
+
+			baseIncomeEl.textContent = formatMoney(baseIncome);
+			equipmentBonusEl.textContent = `x${equipment.income.toFixed(2)}`;
+			fatiguePenaltyEl.textContent = `x${fatiguePenalty.toFixed(2)}`;
+
+			const commuteBonus = Math.floor(totalIncomePerSec() * 6);
+			bonusPreviewEl.textContent = commuteBonus.toLocaleString("ko-KR");
+			miniDifficultyEl.textContent = state.sickness === "번아웃" ? "어려움" : "보통";
 		};
 
-		const spawnStar = () => {
-			const size = 10 + Math.random() * 16;
-			state.stars.push({
-				x: 30 + Math.random() * (canvas.width - 60),
-				y: -size,
-				radius: size,
-				speed: 110 + Math.random() * 120 + state.level * 14,
-				hue: 180 + Math.random() * 100,
-			});
-		};
-
-		const update = (delta) => {
-			state.timer += delta;
-			state.level = 1 + Math.floor(state.timer / 8);
-
-			state.spawnTimer += delta;
-			const spawnInterval = Math.max(0.35, 1.1 - state.level * 0.08);
-			if (state.spawnTimer >= spawnInterval) {
-				state.spawnTimer = 0;
-				spawnStar();
-			}
-
-			state.player.dx = 0;
-			if (keys.has("ArrowLeft") || keys.has("a") || keys.has("A")) {
-				state.player.dx = -state.player.speed;
-			}
-			if (keys.has("ArrowRight") || keys.has("d") || keys.has("D")) {
-				state.player.dx = state.player.speed;
-			}
-
-			state.player.x = clamp(
-				state.player.x + state.player.dx * delta,
-				state.player.width / 2,
-				canvas.width - state.player.width / 2,
-			);
-
-			state.stars = state.stars.filter((star) => {
-				star.y += star.speed * delta;
-				const miss = star.y - star.radius > canvas.height;
-				if (miss) {
-					state.combo += 1;
-					state.score += 10 + state.combo;
-				}
-				return !miss;
-			});
-
-			const playerTop = state.player.y - state.player.height / 2;
-			const playerBottom = state.player.y + state.player.height / 2;
-			const playerLeft = state.player.x - state.player.width / 2;
-			const playerRight = state.player.x + state.player.width / 2;
-
-			for (const star of state.stars) {
-				const hit =
-					star.x + star.radius > playerLeft &&
-					star.x - star.radius < playerRight &&
-					star.y + star.radius > playerTop &&
-					star.y - star.radius < playerBottom;
-				if (hit) {
-					endGame();
-					break;
-				}
-			}
-		};
-
-		const drawBackground = () => {
+		const drawPixelOffice = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-			gradient.addColorStop(0, "rgba(10, 14, 30, 0.9)");
-			gradient.addColorStop(1, "rgba(6, 8, 18, 0.95)");
-			ctx.fillStyle = gradient;
+			ctx.fillStyle = "#0f1220";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-			for (let i = 0; i < 50; i += 1) {
-				ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.15})`;
-				ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
-			}
+			ctx.fillStyle = "#202850";
+			ctx.fillRect(10, 130, 300, 50);
+			ctx.fillStyle = "#1a1f3c";
+			ctx.fillRect(20, 140, 280, 30);
+
+			ctx.fillStyle = "#2a376b";
+			ctx.fillRect(40, 90, 90, 35);
+			ctx.fillStyle = "#8cf6d3";
+			ctx.fillRect(48, 96, 74, 20);
+
+			ctx.fillStyle = "#2a376b";
+			ctx.fillRect(190, 88, 90, 37);
+			ctx.fillStyle = "#ffb4f0";
+			ctx.fillRect(198, 94, 74, 22);
+
+			ctx.fillStyle = "#303b70";
+			ctx.fillRect(140, 100, 40, 20);
+
+			ctx.fillStyle = "#f7f7ff";
+			ctx.fillRect(150, 60, 20, 30);
+			ctx.fillStyle = "#ffb4f0";
+			ctx.fillRect(148, 48, 24, 16);
+			ctx.fillStyle = "#8cf6d3";
+			ctx.fillRect(150, 80, 20, 10);
+
+			ctx.fillStyle = "#3a4476";
+			ctx.fillRect(20, 20, 70, 20);
+			ctx.fillStyle = "#3a4476";
+			ctx.fillRect(230, 20, 70, 20);
+
+			ctx.fillStyle = "#ff7a7a";
+			ctx.fillRect(22, 24, 10, 10);
+			ctx.fillStyle = "#8cf6d3";
+			ctx.fillRect(232, 24, 10, 10);
 		};
 
-		const drawPlayer = () => {
-			ctx.save();
-			ctx.translate(state.player.x, state.player.y);
-			ctx.fillStyle = "rgba(108, 246, 255, 0.9)";
-			ctx.beginPath();
-			ctx.moveTo(0, -18);
-			ctx.lineTo(20, 16);
-			ctx.lineTo(0, 8);
-			ctx.lineTo(-20, 16);
-			ctx.closePath();
-			ctx.fill();
-			ctx.restore();
-		};
-
-		const drawStars = () => {
-			for (const star of state.stars) {
-				ctx.fillStyle = `hsla(${star.hue}, 90%, 70%, 0.9)`;
-				ctx.beginPath();
-				ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-				ctx.fill();
-			}
-		};
-
-		const drawOverlay = () => {
-			if (state.running) return;
-
-			ctx.fillStyle = "rgba(5, 6, 12, 0.55)";
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
-			ctx.fillStyle = "#f2f5ff";
-			ctx.font = "bold 26px Pretendard, sans-serif";
-			ctx.textAlign = "center";
-			ctx.fillText("스페이스바 또는 시작 버튼으로 게임 시작", canvas.width / 2, canvas.height / 2 - 10);
-			ctx.font = "16px Pretendard, sans-serif";
-			ctx.fillStyle = "#9bb4ff";
-			ctx.fillText("별을 피하며 오래 생존하세요!", canvas.width / 2, canvas.height / 2 + 20);
-		};
-
-		const draw = () => {
-			drawBackground();
-			drawStars();
-			drawPlayer();
-			drawOverlay();
-		};
-
-		const loop = (timestamp) => {
-			if (!state.running) {
-				draw();
+		const advanceSickness = () => {
+			const roll = Math.random();
+			const boost = departments[state.department].eventBoost;
+			if (state.sickness === "없음" && roll < 0.02 * boost) {
+				state.sickness = "감기";
+				logEvent("감기에 걸렸습니다. 수익이 감소합니다.");
 				return;
 			}
+			if (state.sickness === "감기" && roll < 0.015 * boost) {
+				state.sickness = "요통";
+				logEvent("요통이 악화되었습니다. 회복량이 감소합니다.");
+				return;
+			}
+			if (state.sickness !== "번아웃" && state.fatigue > 70 && roll < 0.02 * boost) {
+				state.sickness = "번아웃";
+				logEvent("번아웃 상태! 퇴근 난이도가 상승합니다.");
+			}
+		};
 
-			if (!state.lastTime) state.lastTime = timestamp;
-			const delta = Math.min((timestamp - state.lastTime) / 1000, 0.05);
-			state.lastTime = timestamp;
+		const tick = () => {
+			const now = performance.now();
+			const delta = (now - state.lastTick) / 1000;
+			state.lastTick = now;
 
-			update(delta);
-			draw();
+			const equipment = getEquipmentBonus();
+			const dept = departments[state.department];
+			const sickness = sicknessTable[state.sickness];
+
+			state.money += totalIncomePerSec() * delta;
+			state.stamina = Math.max(0, state.stamina - delta * 3.5 * dept.staminaDrain * equipment.staminaDrain);
+			state.fatigue = Math.min(100, state.fatigue + delta * 4.2 * sickness.fatigue);
+
+			if (Math.random() < 0.01) {
+				advanceSickness();
+			}
+
 			updateHud();
-			requestAnimationFrame(loop);
+			drawPixelOffice();
+			requestAnimationFrame(tick);
 		};
 
-		const startGame = () => {
-			if (state.running) return;
-			state.running = true;
-			state.lastTime = 0;
-			requestAnimationFrame(loop);
+		const handleMinigameStart = () => {
+			if (state.minigame.active) return;
+			state.minigame.active = true;
+			state.minigame.startedAt = performance.now();
+			const baseWindow = state.sickness === "번아웃" ? 0.5 : 0.7;
+			state.minigame.window = baseWindow;
+			state.minigame.target = 1.5 + Math.random();
+			miniStatusEl.textContent = "타이밍 맞추기!";
+			logEvent("퇴근 미니게임 시작. 스페이스바 준비!");
 		};
 
-		const endGame = () => {
-			state.running = false;
-			state.combo = 0;
+		const handleMinigameResolve = (success) => {
+			state.minigame.active = false;
+			if (success) {
+				const bonus = totalIncomePerSec() * 6;
+				state.money += bonus;
+				state.stamina = Math.min(100, state.stamina + 18 * sicknessTable[state.sickness].recovery);
+				state.fatigue = Math.max(0, state.fatigue - 22);
+				miniStatusEl.textContent = "퇴근 성공!";
+				logEvent("퇴근 성공! 보너스와 체력 회복.");
+			} else {
+				state.money = Math.max(0, state.money - totalIncomePerSec() * 4);
+				state.stamina = Math.max(0, state.stamina - 14);
+				state.fatigue = Math.min(100, state.fatigue + 15);
+				miniStatusEl.textContent = "야근 발생";
+				logEvent("퇴근 실패! 야근 패널티.");
+			}
+			updateHud();
 		};
 
-		startButton.addEventListener("click", () => {
-			startGame();
+		commuteButton.addEventListener("click", handleMinigameStart);
+
+		restButton.addEventListener("click", () => {
+			state.stamina = Math.min(100, state.stamina + 20 * sicknessTable[state.sickness].recovery);
+			state.fatigue = Math.max(0, state.fatigue - 15);
+			logEvent("휴식을 취해 체력을 회복했습니다.");
+			updateHud();
 		});
 
-		restartButton.addEventListener("click", () => {
-			resetGame();
-			startGame();
+		hospitalButton.addEventListener("click", () => {
+			if (state.money < 150) {
+				logEvent("병원비가 부족합니다.");
+				return;
+			}
+			state.money -= 150;
+			state.sickness = "없음";
+			state.stamina = Math.min(100, state.stamina + 10);
+			state.fatigue = Math.max(0, state.fatigue - 10);
+			logEvent("병원 치료 완료! 상태가 정상으로 돌아왔습니다.");
+			updateHud();
 		});
+
+		levelUpButton.addEventListener("click", () => {
+			const cost = 120 + state.level * 60;
+			if (state.money < cost) {
+				logEvent("레벨업 비용이 부족합니다.");
+				return;
+			}
+			state.money -= cost;
+			state.level += 1;
+			logEvent("직무 레벨이 상승했습니다!");
+			updateHud();
+		});
+
+		promoteButton.addEventListener("click", () => {
+			const cost = 600 + state.rankIndex * 400;
+			if (state.rankIndex >= ranks.length - 1) {
+				logEvent("이미 최고 직급입니다!");
+				return;
+			}
+			if (state.money < cost) {
+				logEvent("승진 비용이 부족합니다.");
+				return;
+			}
+			state.money -= cost;
+			state.rankIndex += 1;
+			state.jobBase += 10;
+			logEvent(`${ranks[state.rankIndex]}으로 승진! 신규 콘텐츠 해금.`);
+			updateHud();
+		});
+
+		const upgradeEquipment = (key, costBase, label) => {
+			const cost = costBase + state.equipment[key] * costBase * 0.8;
+			if (state.money < cost) {
+				logEvent(`${label} 업그레이드 비용이 부족합니다.`);
+				return;
+			}
+			state.money -= cost;
+			state.equipment[key] += 1;
+			logEvent(`${label} 업그레이드 완료 (Lv.${state.equipment[key]}).`);
+			updateHud();
+		};
+
+		keyboardButton.addEventListener("click", () => upgradeEquipment("keyboard", 160, "키보드"));
+		monitorButton.addEventListener("click", () => upgradeEquipment("monitor", 200, "모니터"));
+		chairButton.addEventListener("click", () => upgradeEquipment("chair", 180, "의자"));
+		laptopButton.addEventListener("click", () => upgradeEquipment("laptop", 220, "노트북"));
+
+		const setDepartment = (name) => {
+			state.department = name;
+			logEvent(`${name} 부서로 이동했습니다.`);
+			updateHud();
+		};
+
+		deptDev.addEventListener("click", () => setDepartment("개발"));
+		deptSales.addEventListener("click", () => setDepartment("영업"));
+		deptMarketing.addEventListener("click", () => setDepartment("마케팅"));
 
 		window.addEventListener("keydown", (event) => {
-			keys.add(event.key);
-			if (event.key === " ") {
-				event.preventDefault();
-				startGame();
-			}
+			if (!state.minigame.active) return;
+			if (event.code !== "Space") return;
+			event.preventDefault();
+			const elapsed = (performance.now() - state.minigame.startedAt) / 1000;
+			const difference = Math.abs(elapsed - state.minigame.target);
+			const success = difference <= state.minigame.window;
+			handleMinigameResolve(success);
 		});
 
-		window.addEventListener("keyup", (event) => {
-			keys.delete(event.key);
-		});
-
-		resetGame();
+		updateHud();
+		drawPixelOffice();
+		requestAnimationFrame(tick);
 	</script>
 </body>
 </html>
