@@ -379,7 +379,16 @@
 			department: "개발",
 			sickness: "없음",
 			equipment: { keyboard: 0, monitor: 0, chair: 0, laptop: 0 },
-			minigame: { active: false, target: 0, window: 0, startedAt: 0 },
+			minigame: {
+				active: false,
+				progress: 0,
+				direction: 1,
+				speed: 0.6,
+				window: 0.12,
+				successZone: 0.7,
+				elapsed: 0,
+				timeout: 3.5,
+			},
 			lastTick: performance.now(),
 		};
 
@@ -447,6 +456,27 @@
 			miniDifficultyEl.textContent = state.sickness === "번아웃" ? "어려움" : "보통";
 		};
 
+		const drawMinigameOverlay = () => {
+			if (!state.minigame.active) return;
+			const barX = 40;
+			const barY = 170;
+			const barW = 240;
+			const barH = 10;
+			ctx.fillStyle = "#0b0e1e";
+			ctx.fillRect(barX, barY, barW, barH);
+			ctx.strokeStyle = "#3a4476";
+			ctx.strokeRect(barX, barY, barW, barH);
+
+			const zoneX = barX + barW * state.minigame.successZone;
+			const zoneW = barW * state.minigame.window * 2;
+			ctx.fillStyle = "#8cf6d3";
+			ctx.fillRect(zoneX - zoneW / 2, barY, zoneW, barH);
+
+			const markerX = barX + barW * state.minigame.progress;
+			ctx.fillStyle = "#ffb4f0";
+			ctx.fillRect(markerX - 2, barY - 4, 4, barH + 8);
+		};
+
 		const drawPixelOffice = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			ctx.fillStyle = "#0f1220";
@@ -486,6 +516,8 @@
 			ctx.fillRect(22, 24, 10, 10);
 			ctx.fillStyle = "#8cf6d3";
 			ctx.fillRect(232, 24, 10, 10);
+
+			drawMinigameOverlay();
 		};
 
 		const advanceSickness = () => {
@@ -520,6 +552,22 @@
 			state.stamina = Math.max(0, state.stamina - delta * 3.5 * dept.staminaDrain * equipment.staminaDrain);
 			state.fatigue = Math.min(100, state.fatigue + delta * 4.2 * sickness.fatigue);
 
+			if (state.minigame.active) {
+				state.minigame.elapsed += delta;
+				state.minigame.progress += state.minigame.direction * state.minigame.speed * delta;
+				if (state.minigame.progress >= 1) {
+					state.minigame.progress = 1;
+					state.minigame.direction = -1;
+				}
+				if (state.minigame.progress <= 0) {
+					state.minigame.progress = 0;
+					state.minigame.direction = 1;
+				}
+				if (state.minigame.elapsed >= state.minigame.timeout) {
+					handleMinigameResolve(false);
+				}
+			}
+
 			if (Math.random() < 0.01) {
 				advanceSickness();
 			}
@@ -532,10 +580,13 @@
 		const handleMinigameStart = () => {
 			if (state.minigame.active) return;
 			state.minigame.active = true;
-			state.minigame.startedAt = performance.now();
-			const baseWindow = state.sickness === "번아웃" ? 0.5 : 0.7;
-			state.minigame.window = baseWindow;
-			state.minigame.target = 1.5 + Math.random();
+			state.minigame.progress = 0.1;
+			state.minigame.direction = 1;
+			state.minigame.speed = state.sickness === "번아웃" ? 0.9 : 0.7;
+			state.minigame.window = state.sickness === "번아웃" ? 0.09 : 0.12;
+			state.minigame.successZone = 0.25 + Math.random() * 0.5;
+			state.minigame.elapsed = 0;
+			state.minigame.timeout = state.sickness === "번아웃" ? 2.7 : 3.5;
 			miniStatusEl.textContent = "타이밍 맞추기!";
 			logEvent("퇴근 미니게임 시작. 스페이스바 준비!");
 		};
@@ -641,12 +692,12 @@
 			if (!state.minigame.active) return;
 			if (event.code !== "Space") return;
 			event.preventDefault();
-			const elapsed = (performance.now() - state.minigame.startedAt) / 1000;
-			const difference = Math.abs(elapsed - state.minigame.target);
+			const difference = Math.abs(state.minigame.progress - state.minigame.successZone);
 			const success = difference <= state.minigame.window;
 			handleMinigameResolve(success);
 		});
 
+		logEvent("회사원 육성 시뮬레이션 시작!");
 		updateHud();
 		drawPixelOffice();
 		requestAnimationFrame(tick);
